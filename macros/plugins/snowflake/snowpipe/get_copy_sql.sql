@@ -5,8 +5,9 @@
     {%- set external = source_node.external -%}
     {%- set is_csv = dbt_external_tables.is_csv(external.file_format) %}
     {%- set copy_options = external.snowpipe.get('copy_options', none) -%}
-   
+    {%- set default_data_key = external.default_data_key -%}
     {%- if explicit_transaction -%} begin; {%- endif %}
+    {{ log(default_data_key)}}
     
     copy into {{source(source_node.source_name, source_node.name)}}
     from ( 
@@ -17,12 +18,13 @@
         {%- for column in columns -%}
             {%- set col_expression -%}
                 {%- if is_csv -%}nullif(${{loop.index}},''){# special case: get columns by ordinal position #}
-                {%- else -%}nullif($1:{{column.name}},''){# standard behavior: get columns by name #}
+                {%- else -%}nullif($1:{% if column.use_default_data_key %}{{ default_data_key}}:{% endif %}{{column.name}},''){# standard behavior: get columns by name #}
                 {%- endif -%}
             {%- endset -%}
             {{col_expression}}::{{column.data_type}} as {{column.name}},
         {% endfor -%}
         {% endif %}
+            parse_json($1:_doc) as _doc1,
             metadata$filename::varchar as metadata_filename,
             metadata$file_row_number::bigint as metadata_file_row_number,
             current_timestamp::timestamp as _dbt_copied_at
