@@ -24,6 +24,9 @@
             {{col_expression}}::{{column.data_type}} as {{column.name}},
         {% endfor -%}
         {% endif %}
+            {% if external.snowpipe.get('is_from_dms', none) %}
+            parse_json($1:_doc) as _doc,
+            {% endif %}
             metadata$filename::varchar as metadata_filename,
             metadata$file_row_number::bigint as metadata_file_row_number,
             current_timestamp::timestamp as _dbt_copied_at
