@@ -18,7 +18,7 @@
         {%- for column in columns -%}
             {%- set col_expression -%}
                 {%- if is_csv -%}nullif(${{loop.index}},''){# special case: get columns by ordinal position #}
-                {%- else -%}nullif($1:{% if column.sql %}{{ column.sql }}{% else %}{{column.name}}{% endif %},''){# standard behavior: get columns by name #}
+                {%- else -%}nullif({% if column.sql %}{{ column.sql }}{% else %}$1:{{column.name}}{% endif %},''){# standard behavior: get columns by name #}
                 {%- endif -%}
             {%- endset -%}
             {{col_expression}}::{{column.data_type}} as {{column.name}},
