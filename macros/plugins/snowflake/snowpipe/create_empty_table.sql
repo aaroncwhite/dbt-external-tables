@@ -10,6 +10,9 @@
             {{column.name}} {{column.data_type}},
         {% endfor -%}
         {% endif %}
+            {% if source_node.external.snowpipe.get('is_from_dms', none) %}
+            _doc variant,
+            {% endif %}
             metadata_filename varchar,
             metadata_file_row_number bigint,
             _dbt_copied_at timestamp
