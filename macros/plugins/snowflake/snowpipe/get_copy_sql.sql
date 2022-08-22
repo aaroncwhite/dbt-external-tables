@@ -12,9 +12,8 @@
     copy into {{source(source_node.source_name, source_node.name)}}
     from ( 
         select
-        {% if columns|length == 0 %}
-            $1::variant as value,
-        {% else -%}
+        
+        $1::variant as value,
         {%- for column in columns -%}
             {%- set col_expression -%}
                 {%- if is_csv -%}nullif(${{loop.index}},''){# special case: get columns by ordinal position #}
@@ -23,13 +22,13 @@
             {%- endset -%}
             {{col_expression}}::{{column.data_type}} as {{column.name}},
         {% endfor -%}
+        
+        {% if external.snowpipe.get('is_from_dms', none) %}
+        try_parse_json($1:_doc) as _doc,
         {% endif %}
-            {% if external.snowpipe.get('is_from_dms', none) %}
-            try_parse_json($1:_doc) as _doc,
-            {% endif %}
-            metadata$filename::varchar as metadata_filename,
-            metadata$file_row_number::bigint as metadata_file_row_number,
-            current_timestamp::timestamp as _dbt_copied_at
+        metadata$filename::varchar as metadata_filename,
+        metadata$file_row_number::bigint as metadata_file_row_number,
+        current_timestamp::timestamp as _dbt_copied_at
         from {{external.location}} {# stage #}
     )
     file_format = {{external.file_format}}
