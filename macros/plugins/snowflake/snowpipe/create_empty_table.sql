@@ -3,9 +3,8 @@
     {%- set columns = source_node.columns.values() %}
     
     create or replace table {{source(source_node.source_name, source_node.name)}} (
-        {% if columns|length == 0 %}
             value variant,
-        {% else -%}
+        {% if columns|length != 0 %}
         {%- for column in columns -%}
             {{column.name}} {{column.data_type}},
         {% endfor -%}

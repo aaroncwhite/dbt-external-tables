@@ -13,7 +13,7 @@
     from ( 
         select
         
-        nullif($1::varchar, '') as original_value,
+        $1::variant as value,
         {%- for column in columns -%}
             {%- set col_expression -%}
                 {%- if is_csv -%}nullif(${{loop.index}},''){# special case: get columns by ordinal position #}
